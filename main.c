@@ -8,19 +8,19 @@ int main()
 
     //int v[32];
     // int *v = malloc(sizeof(int)*32);
-    int *v = mymemory_malloc(memory, sizeof(int)*32);
+    int *v = mymemory_alloc(memory, sizeof(int)*32);
     for (int i = 0; i < 32; i++)
         v[i] = i+1;
 
 
-    int *v2 = mymemory_malloc(memory, sizeof(int)*16);
+    int *v2 = mymemory_alloc(memory, sizeof(int)*16);
 
     // free(v);
     mymemory_free(memory, v);
 
-    char *str = mymemory_malloc(memory, sizeof(char)*16);
+    char *str = mymemory_alloc(memory, sizeof(char)*16);
     sprintf(str, "ola mundo");
-
+    printf("v2: %p\n", (void*)v2);
     // libera o pool de memoria
     mymemory_release(memory);
 
