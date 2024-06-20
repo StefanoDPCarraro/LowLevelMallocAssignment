@@ -88,7 +88,30 @@ void mymemory_free(mymemory_t *memory, void *ptr)
 
 void mymemory_display(mymemory_t *memory)
 {
-    
+    if (memory->head != NULL)
+    {
+        allocation_t *newAlloc = (allocation_t *)malloc(sizeof(allocation_t));
+        newAlloc = memory->head;
+        int count = 1;
+        while (1)
+        {
+
+            printf("Alocação: %d  Inicio: %p  Tamanho: %ld\n", count, newAlloc->start, newAlloc->size);
+            if (newAlloc->next != NULL)
+            {
+                newAlloc = newAlloc->next;
+                count++;
+            }
+            else
+            {
+                break;
+            }
+        }
+    }
+    else
+    {
+        printf("Não há nada alocado na memória");
+    }
 }
 
 void mymemory_stats(mymemory_t *memory)

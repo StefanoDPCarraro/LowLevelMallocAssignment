@@ -15,6 +15,9 @@ int main()
 
     int *v2 = mymemory_alloc(memory, sizeof(int)*16);
 
+
+    mymemory_display(memory);
+
     // free(v);
     mymemory_free(memory, v);
 
