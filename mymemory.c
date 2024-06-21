@@ -13,7 +13,9 @@ mymemory_t *mymemory_init(size_t size)
 
 void *mymemory_alloc(mymemory_t *memory, size_t size)
 {
+
     // Primeiro alocamento
+
     if (memory->head == NULL)
     {
         if (memory->total_size > size)
@@ -29,6 +31,21 @@ void *mymemory_alloc(mymemory_t *memory, size_t size)
             printf("Estouro de memoria");
             return NULL;
         }
+    }
+
+    // Caso o primeiro nodo nao comecar no memory pool
+    else if (memory->pool != memory->head->start)
+    {
+        if (memory->head->start - memory->pool > size)
+        {
+            allocation_t *newAlloc = (allocation_t *)malloc(sizeof(allocation_t));
+            newAlloc->size = size;
+            newAlloc->start = memory->pool;
+            newAlloc->next = memory->head;
+            memory->head = newAlloc;
+            return newAlloc->start;
+        }
+        return NULL;
     }
 
     else
@@ -84,6 +101,79 @@ void *mymemory_alloc(mymemory_t *memory, size_t size)
 
 void mymemory_free(mymemory_t *memory, void *ptr)
 {
+
+    // Se for o primeiro elemento
+    if (memory->head->start == ptr)
+    {
+        if (memory->head->next == NULL)
+        {
+            int memorysize = memory->head->size;
+
+            for (int i = 0; i < memorysize - 1; i++)
+            {
+                ((void **)memory->pool)[i] = NULL;
+            }
+
+            memory->head = NULL;
+        }
+        else
+        {
+            int memorysize = memory->head->size;
+            memory->head = memory->head->next;
+
+            for (int i = 0; i < memorysize - 1; i++)
+            {
+                ((void **)memory->pool)[i] = NULL;
+            }
+        }
+    }
+    else
+    {
+
+        allocation_t *aux = memory->head;
+
+        while (1)
+        {
+            if (aux->next == ptr)
+            {
+                if (aux->next != NULL)
+                {
+                    allocation_t *aux2 = aux->next;
+                    if (aux2->next != NULL)
+                    {
+                        aux->next = aux2->next;
+                        int memorysize = aux2->size;
+                        for (int i = 0; i < memorysize - 1; i++)
+                        {
+                            ((void **)memory->pool)[i] = NULL;
+                            break;
+                        }
+                    }
+                    else
+                    {
+
+                        aux->next = NULL;
+                        int memorysize = aux2->size;
+                        for (int i = 0; i < memorysize - 1; i++)
+                        {
+                            ((void **)memory->pool)[i] = NULL;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            else if (aux->next == NULL)
+            {
+                printf("Partição inválida");
+                break;
+            }
+            else
+            {
+                aux = aux->next;
+            }
+        }
+    }
 }
 
 void mymemory_display(mymemory_t *memory)
@@ -120,6 +210,4 @@ void mymemory_stats(mymemory_t *memory)
 
 void mymemory_release(mymemory_t *memory)
 {
-    free(memory);
-    printf("A memória foi limpa");
 }
