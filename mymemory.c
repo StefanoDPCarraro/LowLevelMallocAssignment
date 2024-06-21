@@ -113,7 +113,7 @@ void mymemory_free(mymemory_t *memory, void *ptr)
 
             for (int i = 0; i < memorysize - 1; i++)
             {
-                ((void **)memory->pool)[i] = NULL;
+                ((void **)memory->head->start)[i] = NULL;
             }
 
             memory->head = NULL;
@@ -125,7 +125,7 @@ void mymemory_free(mymemory_t *memory, void *ptr)
 
             for (int i = 0; i < memorysize - 1; i++)
             {
-                ((void **)memory->pool)[i] = NULL;
+                ((void **)memory->head->start)[i] = NULL;
             }
         }
     }
@@ -145,7 +145,7 @@ void mymemory_free(mymemory_t *memory, void *ptr)
                     int memorysize = aux2->size;
                     for (int i = 0; i < memorysize - 1; i++)
                     {
-                        ((void **)memory->pool)[i] = NULL;
+                        ((void **)aux2->start)[i] = NULL;
                     }
                     break;
                 }
@@ -154,7 +154,7 @@ void mymemory_free(mymemory_t *memory, void *ptr)
                     int memorysize = aux2->size;
                     for (int i = 0; i < memorysize - 1; i++)
                     {
-                        ((void **)memory->pool)[i] = NULL;
+                        ((void **)aux2->start)[i] = NULL;
                     }
                     aux->next = NULL;
                     break;
