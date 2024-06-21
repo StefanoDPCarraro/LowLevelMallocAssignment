@@ -36,7 +36,7 @@ void *mymemory_alloc(mymemory_t *memory, size_t size)
     // Caso o primeiro nodo nao comecar no memory pool
     else if (memory->pool != memory->head->start)
     {
-        if (memory->head->start - memory->pool > size)
+        if (memory->head->start - memory->pool > size) 
         {
             allocation_t *newAlloc = (allocation_t *)malloc(sizeof(allocation_t));
             newAlloc->size = size;
@@ -80,7 +80,7 @@ void *mymemory_alloc(mymemory_t *memory, size_t size)
             else
             {
                 size_t gap = (headAux->next->start) - (headAux->start + headAux->size);
-                if (gap >= size)
+                if (gap > size)
                 {
                     allocation_t *newAlloc = (allocation_t *)malloc(sizeof(allocation_t));
                     newAlloc->next = headAux->next;
