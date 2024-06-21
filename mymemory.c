@@ -64,7 +64,8 @@ void *mymemory_alloc(mymemory_t *memory, size_t size)
                     allocation_t *newAlloc = (allocation_t *)malloc(sizeof(allocation_t));
                     headAux->next = newAlloc;
                     newAlloc->size = size;
-                    return newAlloc->start = headAux->start + headAux->size + 1;
+                    newAlloc->start = headAux->start + headAux->size + 1;
+                    return newAlloc->start;
                     break;
                 }
 
@@ -79,13 +80,14 @@ void *mymemory_alloc(mymemory_t *memory, size_t size)
             else
             {
                 size_t gap = (headAux->next->start) - (headAux->start + headAux->size);
-                if (gap < size)
+                if (gap >= size)
                 {
                     allocation_t *newAlloc = (allocation_t *)malloc(sizeof(allocation_t));
                     newAlloc->next = headAux->next;
                     headAux->next = newAlloc;
                     newAlloc->size = size;
-                    return newAlloc->start = headAux->start + headAux->size + 1;
+                    newAlloc->start = headAux->start + headAux->size + 1;
+                    return newAlloc->start;
                     break;
                 }
                 else
@@ -134,32 +136,28 @@ void mymemory_free(mymemory_t *memory, void *ptr)
 
         while (1)
         {
-            if (aux->next == ptr)
+            if (aux->next->start == ptr)
             {
-                if (aux->next != NULL)
+                allocation_t *aux2 = aux->next;
+                if (aux2->next != NULL)
                 {
-                    allocation_t *aux2 = aux->next;
-                    if (aux2->next != NULL)
+                    aux->next = aux2->next;
+                    int memorysize = aux2->size;
+                    for (int i = 0; i < memorysize - 1; i++)
                     {
-                        aux->next = aux2->next;
-                        int memorysize = aux2->size;
-                        for (int i = 0; i < memorysize - 1; i++)
-                        {
-                            ((void **)memory->pool)[i] = NULL;
-                            break;
-                        }
+                        ((void **)memory->pool)[i] = NULL;
                     }
-                    else
+                    break;
+                }
+                else
+                {
+                    int memorysize = aux2->size;
+                    for (int i = 0; i < memorysize - 1; i++)
                     {
-
-                        aux->next = NULL;
-                        int memorysize = aux2->size;
-                        for (int i = 0; i < memorysize - 1; i++)
-                        {
-                            ((void **)memory->pool)[i] = NULL;
-                            break;
-                        }
+                        ((void **)memory->pool)[i] = NULL;
                     }
+                    aux->next = NULL;
+                    break;
                 }
             }
 
@@ -210,4 +208,9 @@ void mymemory_stats(mymemory_t *memory)
 
 void mymemory_release(mymemory_t *memory)
 {
+    for (int i = 0; i < memory->total_size - 1; i++)
+    {
+        ((void **)memory->pool)[i] = NULL;
+    }
+    printf("Memória liberada");
 }
