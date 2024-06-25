@@ -1,11 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "mymemory.h"
-#include <string.h>
 
 mymemory_t *mymemory_init(size_t size)
 {
-    mymemory_t *memory = (mymemory_t *)malloc(sizeof(size));
+    mymemory_t *memory = (mymemory_t *)malloc(sizeof(mymemory_t));
     memory->pool = malloc(size);
     memory->total_size = size;
     memory->head = NULL;
@@ -97,77 +96,114 @@ void *mymemory_alloc(mymemory_t *memory, size_t size)
     }
 }
 
+// void mymemory_free(mymemory_t *memory, void *ptr)
+// {
+
+//     // Se for o primeiro elemento
+//     if (memory->head->start == ptr)
+//     {
+//         if (memory->head->next == NULL)
+//         {
+//             int memorysize = memory->head->size;
+
+//             for (int i = 0; i < memorysize - 1; i++)
+//             {
+//                 ((void **)memory->head->start)[i] = NULL;
+//             }
+
+//             memory->head = NULL;
+//         }
+//         else
+//         {
+//             int memorysize = memory->head->size;
+//             memory->head = memory->head->next;
+
+//             for (int i = 0; i < memorysize - 1; i++)
+//             {
+//                 ((void **)memory->head->start)[i] = NULL;
+//             }
+//         }
+//     }
+//     else
+//     {
+
+//         allocation_t *aux = memory->head;
+
+//         while (1)
+//         {
+//             if (aux->next->start == ptr)
+//             {
+//                 allocation_t *aux2 = aux->next;
+//                 if (aux2->next != NULL)
+//                 {
+//                     aux->next = aux2->next;
+//                     int memorysize = aux2->size;
+//                     for (int i = 0; i < memorysize - 1; i++)
+//                     {
+//                         ((void **)aux2->start)[i] = NULL;
+//                     }
+//                     break;
+//                 }
+//                 else
+//                 {
+//                     int memorysize = aux2->size;
+//                     for (int i = 0; i < memorysize - 1; i++)
+//                     {
+//                         ((void **)aux2->start)[i] = NULL;
+//                     }
+//                     aux->next = NULL;
+//                     break;
+//                 }
+//             }
+
+//             else if (aux->next == NULL)
+//             {
+//                 printf("Partição inválida\n");
+//                 break;
+//             }
+//             else
+//             {
+//                 aux = aux->next;
+//             }
+//         }
+//     }
+// }
+
 void mymemory_free(mymemory_t *memory, void *ptr)
 {
-
-    // Se for o primeiro elemento
-    if (memory->head->start == ptr)
+    if (memory == NULL || memory->head == NULL || ptr == NULL)
     {
-        if (memory->head->next == NULL)
-        {
-            int memorysize = memory->head->size;
-
-            for (int i = 0; i < memorysize - 1; i++)
-            {
-                ((void **)memory->head->start)[i] = NULL;
-            }
-
-            memory->head = NULL;
-        }
-        else
-        {
-            int memorysize = memory->head->size;
-            memory->head = memory->head->next;
-
-            for (int i = 0; i < memorysize - 1; i++)
-            {
-                ((void **)memory->head->start)[i] = NULL;
-            }
-        }
+        return;
     }
-    else
+
+    allocation_t *headAux = memory->head;
+    allocation_t *prevHead = NULL; // prevHead para arrumar a lista depois que o nodo a ser removido for encontrado
+
+    while (headAux != NULL)
     {
-
-        allocation_t *aux = memory->head;
-
-        while (1)
+        if (headAux->start == ptr) //Se encontrar a particao
         {
-            if (aux->next->start == ptr)
+            if (prevHead == NULL)
             {
-                allocation_t *aux2 = aux->next;
-                if (aux2->next != NULL)
-                {
-                    aux->next = aux2->next;
-                    int memorysize = aux2->size;
-                    for (int i = 0; i < memorysize - 1; i++)
-                    {
-                        ((void **)aux2->start)[i] = NULL;
-                    }
-                    break;
-                }
-                else
-                {
-                    int memorysize = aux2->size;
-                    for (int i = 0; i < memorysize - 1; i++)
-                    {
-                        ((void **)aux2->start)[i] = NULL;
-                    }
-                    aux->next = NULL;
-                    break;
-                }
-            }
-
-            else if (aux->next == NULL)
-            {
-                printf("Partição inválida");
-                break;
+                memory->head = headAux->next;
             }
             else
             {
-                aux = aux->next;
+                prevHead->next = headAux->next; // Aponta para o proximo depois de de Head
             }
+
+            free(ptr);
+            free(headAux);
+
+            return;
         }
+
+        prevHead = headAux;
+        headAux = prevHead->next;
     }
+
+    // Caso não encontre o ptr na lista
+    printf("Partição inválida\n");
 }
 
 void mymemory_display(mymemory_t *memory)
@@ -230,7 +266,8 @@ void mymemory_stats(mymemory_t *memory)
 
                 headAux = headAux->next;
             }
-
+            if (countFragmentationMemories == 0)
+                countFragmentationMemories = 1;
             printf("Tamanho da memória: %ld  Número total de alocações: %d  Memória total alocada: %ld  Memória total livre: %d \nMaior bloco contiguo de memória livre: %d  Número de fragmentos de memória livre: %d\n", memory->total_size, countAllocations, memory->total_size - countFreeMemory, countFreeMemory, biggestFreeGap - 1, countFragmentationMemories);
         }
         else
@@ -246,5 +283,9 @@ void mymemory_stats(mymemory_t *memory)
 
 void mymemory_release(mymemory_t *memory)
 {
+    while (memory->head != NULL)
+    {
+        mymemory_free(memory, memory->head->start);
+    }
     free(memory);
 }
