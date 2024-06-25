@@ -192,7 +192,7 @@ void mymemory_free(mymemory_t *memory, void *ptr)
                 prevHead->next = headAux->next; // Aponta para o proximo depois de de Head
             }
 
-            free(ptr);
+            //REMOVIDO FREE POINTER
             free(headAux);
 
             return;
