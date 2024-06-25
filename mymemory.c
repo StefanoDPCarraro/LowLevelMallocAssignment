@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "mymemory.h"
+#include <string.h>
 
 mymemory_t *mymemory_init(size_t size)
 {
@@ -14,7 +15,7 @@ mymemory_t *mymemory_init(size_t size)
 void *mymemory_alloc(mymemory_t *memory, size_t size)
 {
 
-    // Primeiro alocamento
+    //  Primeiro alocamento
 
     if (memory->head == NULL)
     {
@@ -36,7 +37,7 @@ void *mymemory_alloc(mymemory_t *memory, size_t size)
     // Caso o primeiro nodo nao comecar no memory pool
     else if (memory->pool != memory->head->start)
     {
-        if (memory->head->start - memory->pool > size) 
+        if (memory->head->start - memory->pool > size)
         {
             allocation_t *newAlloc = (allocation_t *)malloc(sizeof(allocation_t));
             newAlloc->size = size;
@@ -45,57 +46,52 @@ void *mymemory_alloc(mymemory_t *memory, size_t size)
             memory->head = newAlloc;
             return newAlloc->start;
         }
-        return NULL;
     }
 
-    else
+    allocation_t *headAux = memory->head;
+    size_t acummulationSize = headAux->size;
+
+    while (1)
     {
 
-        allocation_t *headAux = memory->head;
-        size_t acummulationSize = headAux->size;
-
-        while (1)
+        if (headAux->next == NULL)
         {
-
-            if (headAux->next == NULL)
+            if ((acummulationSize + size) <= memory->total_size)
             {
-                if ((acummulationSize + size) <= memory->total_size)
-                {
-                    allocation_t *newAlloc = (allocation_t *)malloc(sizeof(allocation_t));
-                    headAux->next = newAlloc;
-                    newAlloc->size = size;
-                    newAlloc->start = headAux->start + headAux->size + 1;
-                    return newAlloc->start;
-                    break;
-                }
-
-                else
-                {
-                    printf("Estouro de memoria");
-                    return NULL;
-                    break;
-                }
+                allocation_t *newAlloc = (allocation_t *)malloc(sizeof(allocation_t));
+                headAux->next = newAlloc;
+                newAlloc->size = size;
+                newAlloc->start = headAux->start + headAux->size + 1;
+                return newAlloc->start;
+                break;
             }
 
             else
             {
-                size_t gap = (headAux->next->start) - (headAux->start + headAux->size);
-                if (gap > size)
-                {
-                    allocation_t *newAlloc = (allocation_t *)malloc(sizeof(allocation_t));
-                    newAlloc->next = headAux->next;
-                    headAux->next = newAlloc;
-                    newAlloc->size = size;
-                    newAlloc->start = headAux->start + headAux->size + 1;
-                    return newAlloc->start;
-                    break;
-                }
-                else
-                {
+                printf("Estouro de memoria");
+                return NULL;
+                break;
+            }
+        }
 
-                    headAux = headAux->next;
-                    acummulationSize += headAux->size + gap;
-                }
+        else
+        {
+            size_t gap = (headAux->next->start) - (headAux->start + headAux->size);
+            if (gap > size)
+            {
+                allocation_t *newAlloc = (allocation_t *)malloc(sizeof(allocation_t));
+                newAlloc->next = headAux->next;
+                headAux->next = newAlloc;
+                newAlloc->size = size;
+                newAlloc->start = headAux->start + headAux->size + 1;
+                return newAlloc->start;
+                break;
+            }
+            else
+            {
+
+                headAux = headAux->next;
+                acummulationSize += headAux->size + gap;
             }
         }
     }
@@ -204,13 +200,52 @@ void mymemory_display(mymemory_t *memory)
 
 void mymemory_stats(mymemory_t *memory)
 {
+    if (memory->pool != NULL)
+    {
+        if (memory->head != NULL)
+        {
+            allocation_t *headAux = memory->head;
+            int countAllocations = 0;
+            int countFragmentationMemories = 0;
+            int countFreeMemory = memory->total_size;
+            int biggestFreeGap = 0;
+
+            while (headAux != NULL)
+            {
+                countAllocations++;
+                countFreeMemory -= headAux->size;
+
+                if (headAux->next != NULL)
+                {
+                    int gap = headAux->next->start - (headAux->start + headAux->size);
+                    if (gap > 1)
+                    {
+                        countFragmentationMemories++;
+                        if (biggestFreeGap < gap)
+                        {
+                            biggestFreeGap = gap;
+                        }
+                    }
+                }
+
+                headAux = headAux->next;
+            }
+
+            printf("Tamanho da memória: %ld  Número total de alocações: %d  Memória total alocada: %ld  Memória total livre: %d \nMaior bloco contiguo de memória livre: %d  Número de fragmentos de memória livre: %d\n", memory->total_size, countAllocations, memory->total_size - countFreeMemory, countFreeMemory, biggestFreeGap - 1, countFragmentationMemories);
+        }
+        else
+        {
+            printf("Memória alocadada: %ld\n", memory->total_size);
+        }
+    }
+    else
+    {
+        printf("Não há memória alocadada\n");
+    }
 }
+
 
 void mymemory_release(mymemory_t *memory)
 {
-    for (int i = 0; i < memory->total_size - 1; i++)
-    {
-        ((void **)memory->pool)[i] = NULL;
-    }
-    printf("Memória liberada");
+   free(memory);
 }

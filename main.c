@@ -48,13 +48,13 @@ int main()
 #include "mymemory.h"
 
 void print_menu() {
-    printf("Menu:\n");
+    printf("\nMenu:\n");
     printf("1. Inicializar memória\n");
     printf("2. Alocar memória\n");
     printf("3. Liberar memória\n");
     printf("4. Exibir memória\n");
     printf("5. Estatísticas da memória\n");
-    printf("6. Liberar memória e sair\n");
+    printf("6. Liberar memória\n");
     printf("Escolha uma opção: ");
 }
 
@@ -125,8 +125,11 @@ int main() {
             case 6:
                 if (memory) {
                     mymemory_release(memory);
-                    printf("Memória liberada e programa encerrado.\n");
+                    printf("Memória liberada\n");
+                    break;
                 }
+
+
                 return 0;
 
             default:
