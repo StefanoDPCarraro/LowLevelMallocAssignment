@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "mymemory.h"
-#include <string.h>
 
 mymemory_t *mymemory_init(size_t size)
 {
@@ -246,5 +245,9 @@ void mymemory_stats(mymemory_t *memory)
 
 void mymemory_release(mymemory_t *memory)
 {
+    while (memory->head != NULL)
+    {
+        mymemory_free(memory, memory->head->start);
+    }
     free(memory);
 }
