@@ -244,8 +244,7 @@ void mymemory_stats(mymemory_t *memory)
     }
 }
 
-
 void mymemory_release(mymemory_t *memory)
 {
-   free(memory);
+    free(memory);
 }
